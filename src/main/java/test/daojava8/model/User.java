@@ -5,14 +5,10 @@
  */
 package test.daojava8.model;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.function.Function;
 import test.daojava8.RSMapFunction;
 
 /**
  *
- * @author kentaro.maeda
  */
 public class User {
 

@@ -5,12 +5,8 @@
  */
 package test.daojava8.model;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.BiFunction;
-import java.util.function.Function;
 import test.daojava8.RSMapFunction;
 
 /**

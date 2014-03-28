@@ -46,7 +46,7 @@ public class DaoTest {
             DaoTest dao = new DaoTest();
             Stream<Dept> depts = dao.select(con, "select * from dept", Dept.MAPPER);
             System.out.println("select実行時点でSQLは実行されない");
-            // forEach等、終端操作で実行。
+            // forEach等、終端操作でSQL実行。
             depts.forEach(System.out::println);
 
             
@@ -90,10 +90,7 @@ public class DaoTest {
         return StreamSupport.stream(Spliterators.spliteratorUnknownSize(itr, 0), false);
                 
     }
-   
-    
-   
-    
+
     public static void ddl(Connection con, String sql) throws SQLException{
         Statement st = con.createStatement();
         st.executeUpdate(sql);

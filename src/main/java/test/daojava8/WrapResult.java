@@ -12,7 +12,6 @@ import java.util.Iterator;
 
 /**
  *
- * @author kentaro.maeda
  */
 public class WrapResult<T> implements Iterator<T> {
 
