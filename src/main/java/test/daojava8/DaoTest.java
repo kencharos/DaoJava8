@@ -88,8 +88,8 @@ public class DaoTest {
                 result.put("name", rs.getString("name"));
                 result.put("deptName", rs.getString("deptName"));
                 return result;
-            }).limit(3)){
-                s.forEach(System.out::println);
+            })){
+                s.limit(3).forEach(System.out::println);
             }
         }
         
