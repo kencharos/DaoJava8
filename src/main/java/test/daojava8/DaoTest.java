@@ -5,6 +5,8 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Spliterators;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -47,7 +49,7 @@ public class DaoTest {
             Stream<Dept> depts = dao.select(con, "select * from dept", Dept.MAPPER);
             System.out.println("select実行時点でSQLは実行されない");
             // forEach等、終端操作でSQL実行。
-            depts.forEach(System.out::println);
+            depts.limit(1).forEach(System.out::println);
 
             
             String userSql = "select * from user where deptId='%s'";
@@ -64,14 +66,31 @@ public class DaoTest {
             // map,flatmapで展開
             System.out.println("部署に所属ユーザー一覧を足してみる。");
             dao.select(con, "select * from dept", Dept.MAPPER)
-                    .map(d -> relation.apply(d))
+                    .map(relation)
                     .forEach(System.out::println);
             System.out.println("部署から所属ユーザーの一覧に変換して件数制限");
             dao.select(con, "select * from dept" , Dept.MAPPER)
-                    .flatMap(d -> oneToMany.apply(d))
-                    .skip(2)
-                    .limit(3)
+                    .skip(1)
+                    .flatMap(oneToMany)
+                    .limit(1)
                     .forEach(System.out::println);
+            
+            System.out.println("join");
+            String joinSql = "select * from user inner join dept on user.deptId = dept.deptId";
+            
+            /* FIX ME.
+             * limitなどでフェッチ前で取得を打ち切る場合に備えて、onCloseでステートメントを閉じるようにしているのだが、
+             * Streamのcloseは明示的に呼ぶかtry-with-resorceにする必要があるので、この書き方は少し不便。どうにかならないか。。
+             */
+            try(Stream<Map<String, String>> s = dao.select(con, joinSql, (rs) ->{
+                // joinでも任意の型にマッピングできるし、型推論が利くので型指定が少なくなる。
+                Map<String, String> result = new HashMap<>();
+                result.put("name", rs.getString("name"));
+                result.put("deptName", rs.getString("deptName"));
+                return result;
+            }).limit(3)){
+                s.forEach(System.out::println);
+            }
         }
         
     }
@@ -87,13 +106,15 @@ public class DaoTest {
         }
         WrapResult<R> itr = new WrapResult<>(st, rs, mapper);
         // StreamSupportで、イテレータからStreamを作れる。
-        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(itr, 0), false);
+        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(itr, 0), false)
+                .onClose(() -> itr.close());
                 
     }
+    
 
     public static void ddl(Connection con, String sql) throws SQLException{
-        Statement st = con.createStatement();
-        st.executeUpdate(sql);
-        st.close();
+        try (Statement st = con.createStatement()) {
+            st.executeUpdate(sql);
+        }
     }
 }

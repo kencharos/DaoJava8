@@ -9,6 +9,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Iterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -46,5 +48,17 @@ public class WrapResult<T> implements Iterator<T> {
     public T next() {
         return cur;
     }
-
+    
+    /** limit等で最後までフェッチされない場合にもステートメントを閉じたいのだが、、 */
+    public void close() {
+            try {
+                if(!st.isClosed()) {
+                    System.out.println("close..");
+                    st.close();
+                }
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
 }
